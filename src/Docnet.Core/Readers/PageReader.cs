@@ -172,6 +172,53 @@ namespace Docnet.Core.Readers
         }
 
         /// <inheritdoc />
+        public PdfBitmap GetBitmap(RenderFlags flags, float scale, (float left, float top, float right, float bottom) clip)
+        {
+            lock (DocLib.Lock)
+            {
+                var width = (int)(fpdf_view.FPDF_GetPageWidth(_page) * scale);
+                var height = (int)(fpdf_view.FPDF_GetPageHeight(_page) * scale);
+
+                var bitmap = fpdf_view.FPDFBitmapCreate(width, height, 1);
+
+                if (bitmap == null)
+                {
+                    throw new DocnetException("failed to create a bitmap object");
+                }
+
+                try
+                {
+                    // |          | a b 0 |
+                    // | matrix = | c d 0 |
+                    // |          | e f 1 |
+                    using (var matrix = new FS_MATRIX_())
+                    using (var clipping = new FS_RECTF_())
+                    {
+                        matrix.A = scale;
+                        matrix.B = 0;
+                        matrix.C = 0;
+                        matrix.D = scale;
+                        matrix.E = 0;
+                        matrix.F = 0;
+
+                        clipping.Left = 0;
+                        clipping.Right = width;
+                        clipping.Bottom = 0;
+                        clipping.Top = height;
+
+                        fpdf_view.FPDF_RenderPageBitmapWithMatrix(bitmap, _page, matrix, clipping, (int)flags);
+
+                        return new PdfBitmap(bitmap, width, height);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new DocnetException("error rendering page", ex);
+                }
+            }
+        }
+
+        /// <inheritdoc />
         public byte[] GetImage() => GetImage(0);
 
         /// <inheritdoc />

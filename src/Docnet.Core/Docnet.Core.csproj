@@ -24,15 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="runtimes/**" PackagePath="runtimes" Visible="true" />
-    <None Include="../../assets/icon.png" Pack="true" PackagePath="/" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="Obsessive.Defender" Version="1.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
   </ItemGroup>
 </Project>

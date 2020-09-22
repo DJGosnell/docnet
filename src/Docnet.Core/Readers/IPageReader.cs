@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Docnet.Core.Bindings;
 using Docnet.Core.Converters;
 using Docnet.Core.Models;
 
@@ -68,5 +69,11 @@ namespace Docnet.Core.Readers
         /// to modify the image.
         /// </summary>
         byte[] GetImage(IImageBytesConverter converter, RenderFlags flags);
+
+        /// <inheritdoc />
+        PdfBitmap GetBitmap(
+            RenderFlags flags, 
+            float scale, 
+            (float left, float top, float right, float bottom) clipping);
     }
 }
