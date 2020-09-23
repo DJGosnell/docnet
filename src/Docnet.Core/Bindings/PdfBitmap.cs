@@ -2,34 +2,47 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Text;
 
 namespace Docnet.Core.Bindings
 {
-    public class PdfBitmap : IDisposable
+    public unsafe class PdfBitmap : IDisposable
     {
         private readonly FpdfBitmapT _pdfBitmap;
-        private readonly IntPtr _buffer;
+
         public PixelFormat Type => PixelFormat.Format32bppPArgb;
 
-        public int Width { get; set; }
+        public int Width { get; }
 
-        public int Height { get; set; }
+        public int Height { get; }
 
-        public int Stride { get; set; }
+        public int Stride { get; }
 
-        public IntPtr Scan0 { get; set; }
+        public IntPtr Scan0 { get; }
 
         public Bitmap Bitmap { get; }
+
 
         public bool IsDisposed { get; private set; }
 
         internal PdfBitmap(FpdfBitmapT pdfBitmap, int width, int height)
         {
             _pdfBitmap = pdfBitmap;
-            var buffer = fpdf_view.FPDFBitmapGetBuffer(pdfBitmap);
-            var stride = fpdf_view.FPDFBitmapGetStride(pdfBitmap);
-            Bitmap = new Bitmap(width, height, stride, PixelFormat.Format32bppPArgb, buffer);
+            Scan0 = fpdf_view.FPDFBitmapGetBuffer(pdfBitmap);
+            Stride = fpdf_view.FPDFBitmapGetStride(pdfBitmap);
+            Height = height;
+            Width = width;
+            Bitmap = new Bitmap(width, height, Stride, PixelFormat.Format32bppPArgb, Scan0);
+        }
+
+        public Stream GetStream()
+        {
+            var pointer = (byte*) Scan0;
+            if (pointer == null)
+                return null;
+
+            return new UnmanagedMemoryStream(pointer, Stride * Height);
         }
 
         private void ReleaseUnmanagedResources()
